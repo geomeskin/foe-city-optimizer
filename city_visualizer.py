@@ -21,7 +21,7 @@ COLORS = {
 }
 
 
-def render(unlocked, placed, roads, out="city_layout.html", original_roads=None):
+def render(unlocked, placed, roads, out="city_layout.html", original_roads=None, city_tag=""):
     xs = [x for x, y in unlocked]
     ys = [y for x, y in unlocked]
     min_x, max_x = min(xs), max(xs)
@@ -155,9 +155,11 @@ def render(unlocked, placed, roads, out="city_layout.html", original_roads=None)
         for k, c in COLORS.items() if k not in ("free", "locked")
     )
 
+    page_title = "FoE Optimized City Layout" + (f" ({city_tag})" if city_tag else "")
+
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>FoE Optimized City Layout</title>
+<title>{page_title}</title>
 <style>
 body{{font-family:sans-serif;background:#1a1a2e;color:#eee;padding:20px;margin:0}}
 h2{{margin-bottom:4px}}
@@ -175,7 +177,7 @@ h2{{margin-bottom:4px}}
 </style>
 </head>
 <body>
-<h2>FoE Optimized City Layout</h2>
+<h2>{page_title}</h2>
 <div class="stats">
   Buildings: {bldg_count} &nbsp;|&nbsp;
   Road tiles: {road_count} (was {orig}) &nbsp;|&nbsp;
@@ -227,9 +229,11 @@ if __name__ == "__main__":
     city = load_city(export_file) if export_file else load_city()
     placed, roads = optimize(city)
     if export_file:
-        stem = re.sub(r"^Full", "", os.path.basename(export_file).split("_")[0])
-        out  = f"city_layout_{stem}.html"
+        stem     = re.sub(r"^Full", "", os.path.basename(export_file).split("_")[0])
+        city_tag = os.path.splitext(os.path.basename(export_file))[0]
+        out      = f"city_layout_{stem}.html"
     else:
+        city_tag = ""
         out = "city_layout.html"
     render(city["unlocked"], placed, roads, out,
-           original_roads=city.get("original_roads"))
+           original_roads=city.get("original_roads"), city_tag=city_tag)

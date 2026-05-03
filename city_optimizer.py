@@ -200,6 +200,7 @@ def connect_to_network(b, road_net, unlocked, occupied, th_fp=frozenset()):
 
 UNREACHABLE_PENALTY = 500   # per unroutable road building
 NO_FIT_PENALTY      = 500   # per large non-road building that won't fit
+BUDDY_SPACE_PENALTY = 250   # per set partner that can't fit adjacent to its anchor
 
 def route_roads(city, road_positioned, th_fp, premier_fp=frozenset()):
     """
@@ -243,6 +244,25 @@ def route_roads(city, road_positioned, th_fp, premier_fp=frozenset()):
         )
         if not fits:
             penalties += NO_FIT_PENALTY
+
+    # Penalise set anchors whose adjacent area can't fit all their partners.
+    # This steers SA away from packing road buildings so tightly around an anchor
+    # that Road to Victory / Iridescent Garden etc. have nowhere to go.
+    for anchor in road_positioned:
+        partner_eids = BUILDING_SETS.get(anchor["entity_id"])
+        if not partner_eids:
+            continue
+        for peid in partner_eids:
+            partner = next(
+                (b for b in buildings if b["entity_id"] == peid and b["road_req"] == 0),
+                None
+            )
+            if partner is None:
+                continue
+            needed    = sum(1 for b in buildings if b["entity_id"] == peid and b["road_req"] == 0)
+            available = len(near_cells(anchor, partner, unlocked, full_occ))
+            shortfall = max(0, needed - available)
+            penalties += shortfall * BUDDY_SPACE_PENALTY
 
     return roads, penalties
 
@@ -290,14 +310,19 @@ def full_rebuild(city, road_positioned, premier_positioned=None):
     other_bldgs = sorted(
         [b for b in buildings
          if b["road_req"] == 0 and not is_premier(b) and b["inst_id"] not in buddy_ids],
-        key=lambda b: (-BOOST_SCORES.get(b["entity_id"], 0), -b["tiles"], b["entity_id"])
+        key=lambda b: (-b["tiles"], -BOOST_SCORES.get(b["entity_id"], 0), b["entity_id"])
     )
     rowmajor = sorted(unlocked, key=lambda c: (c[1], c[0]))
 
+    failed = []
     for b in other_bldgs:
         pb = first_fit(b, rowmajor, unlocked, occupied)
         if pb:
             placed.append(pb)
+        else:
+            failed.append(f"{b['name']} ({b['width']}x{b['length']})")
+    if failed:
+        print(f"  full_rebuild failed to place: {failed}")
 
     return placed, roads
 

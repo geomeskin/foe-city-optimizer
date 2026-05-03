@@ -79,5 +79,5 @@ if __name__ == "__main__":
         out = "city_layout.html"
 
     render(city["unlocked"], best_placed, best_roads_set, out,
-           original_roads=city.get("original_roads"))
+           original_roads=city.get("original_roads"), city_tag=stem if export_file else "")
     print(f"\nBest: seed={best_seed}, {best_roads} roads  ->  {out}")
