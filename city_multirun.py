@@ -19,7 +19,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 
 from city_loader import load_city
-from city_optimizer import optimize
+from city_optimizer import optimize, check_buddy_adjacency
 from city_visualizer import render
 
 
@@ -54,12 +54,16 @@ if __name__ == "__main__":
 
     results = []
     with multiprocessing.Pool(num_workers) as pool:
-        jobs = [pool.apply_async(_run_one, (a,)) for a in args_list]
+        jobs = []
+        for a in args_list:
+            jobs.append(pool.apply_async(_run_one, (a,)))
+            print(f"  seed={a[1]:5d}  started...", flush=True)
+        print()
         for job, seed in zip(jobs, seeds):
             seed_out, roads, placed, roads_set = job.get()
             results.append((seed_out, roads, placed, roads_set))
             marker = "  ** best so far" if roads == min(r[1] for r in results) else ""
-            print(f"  seed={seed_out:5d}  done  ->  {roads} roads{marker}")
+            print(f"  seed={seed_out:5d}  done  ->  {roads} roads{marker}", flush=True)
 
     results.sort(key=lambda r: r[1])
 
@@ -78,6 +82,14 @@ if __name__ == "__main__":
     else:
         out = "city_layout.html"
 
+    buddy_violations = check_buddy_adjacency(best_placed)
+    if buddy_violations:
+        print(f"  Set buddies: FAILED ({len(buddy_violations)} adjacency violation(s))")
+        for v in buddy_violations:
+            print(v)
+    else:
+        print("  Set buddies: all adjacent (OK)")
+
     render(city["unlocked"], best_placed, best_roads_set, out,
            original_roads=city.get("original_roads"), city_tag=stem if export_file else "")
-    print(f"\nBest: seed={best_seed}, {best_roads} roads  ->  {out}")
+    print(f"Best: seed={best_seed}, {best_roads} roads  ->  {out}")

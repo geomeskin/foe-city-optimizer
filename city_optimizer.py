@@ -119,31 +119,44 @@ def near_cells(anchor_b, partner_b, unlocked, occupied):
 
 def place_set_buddies(road_placed, buildings, unlocked, occupied, placed):
     """
-    After road buildings are placed, immediately place their set partners
-    (from building_sets.json) in adjacent cells.
-    Returns set of inst_ids placed as buddies (excluded from normal non-road phase).
+    For each road-requiring anchor place exactly ONE set partner adjacent to it.
+    Partners are claimed greedily (first anchor that can fit them wins).
+    Unmatched partners are NOT globally failed — they fall through to other_bldgs.
+    Returns (buddy_inst_ids, failed_anchors):
+      buddy_inst_ids  : inst_ids of partners placed adjacent
+      failed_anchors  : anchor building dicts that could not get any partner adjacent
     """
     already_placed = {b["inst_id"] for b in placed}
     buddy_inst_ids = set()
+    failed_anchors = []
 
     for anchor in road_placed:
         partner_eids = BUILDING_SETS.get(anchor["entity_id"])
         if not partner_eids:
             continue
+        any_partner_exists = False
+        placed_for_anchor = False
         for peid in partner_eids:
             partners = [b for b in buildings
                         if b["entity_id"] == peid
                         and b["road_req"] == 0
                         and b["inst_id"] not in already_placed
                         and b["inst_id"] not in buddy_inst_ids]
+            if partners:
+                any_partner_exists = True
             for partner in partners:
                 scan = near_cells(anchor, partner, unlocked, occupied)
                 pb = first_fit(partner, scan, unlocked, occupied)
                 if pb:
                     placed.append(pb)
                     buddy_inst_ids.add(partner["inst_id"])
+                    placed_for_anchor = True
+                # no global fail — partners that don't fit here may fit on another anchor
 
-    return buddy_inst_ids
+        if any_partner_exists and not placed_for_anchor:
+            failed_anchors.append(anchor)
+
+    return buddy_inst_ids, failed_anchors
 
 
 # -----------------------------------------
@@ -245,9 +258,8 @@ def route_roads(city, road_positioned, th_fp, premier_fp=frozenset()):
         if not fits:
             penalties += NO_FIT_PENALTY
 
-    # Penalise set anchors whose adjacent area can't fit all their partners.
-    # This steers SA away from packing road buildings so tightly around an anchor
-    # that Road to Victory / Iridescent Garden etc. have nowhere to go.
+    # Penalise anchors that don't have enough adjacent room for all their partners.
+    # Skip partner types that don't exist in this city at all.
     for anchor in road_positioned:
         partner_eids = BUILDING_SETS.get(anchor["entity_id"])
         if not partner_eids:
@@ -258,7 +270,7 @@ def route_roads(city, road_positioned, th_fp, premier_fp=frozenset()):
                 None
             )
             if partner is None:
-                continue
+                continue   # this partner type not in city — skip
             needed    = sum(1 for b in buildings if b["entity_id"] == peid and b["road_req"] == 0)
             available = len(near_cells(anchor, partner, unlocked, full_occ))
             shortfall = max(0, needed - available)
@@ -294,7 +306,10 @@ def full_rebuild(city, road_positioned, premier_positioned=None):
     placed = [dict(th_b)] + [dict(b) for b in premier_positioned] + [dict(b) for b in road_positioned]
 
     # Place set buddies BEFORE routing so roads route around them
-    buddy_ids = place_set_buddies(road_positioned, buildings, unlocked, occupied, placed)
+    buddy_ids, failed_anchors = place_set_buddies(road_positioned, buildings, unlocked, occupied, placed)
+    if failed_anchors:
+        names = [f"{a['name']} @ ({a['x']},{a['y']})" for a in failed_anchors]
+        print(f"  WARNING: {len(failed_anchors)} anchor(s) have no set buddy adjacent: {names}")
 
     road_net = set(th_fp)
     for b in sorted(road_positioned, key=lambda b: abs(b["x"]-th_cx)+abs(b["y"]-th_cy)):
@@ -309,7 +324,8 @@ def full_rebuild(city, road_positioned, premier_positioned=None):
 
     other_bldgs = sorted(
         [b for b in buildings
-         if b["road_req"] == 0 and not is_premier(b) and b["inst_id"] not in buddy_ids],
+         if b["road_req"] == 0 and not is_premier(b)
+         and b["inst_id"] not in buddy_ids],
         key=lambda b: (-b["tiles"], -BOOST_SCORES.get(b["entity_id"], 0), b["entity_id"])
     )
     rowmajor = sorted(unlocked, key=lambda c: (c[1], c[0]))
@@ -343,6 +359,35 @@ def clustering_score(placed):
             for j in range(i+1, len(pos)):
                 total += abs(pos[i][0]-pos[j][0]) + abs(pos[i][1]-pos[j][1])
     return total
+
+
+def check_buddy_adjacency(placed):
+    """
+    Verify each set anchor instance has at least one partner instance adjacent.
+    Returns list of violation strings (empty = all good).
+    """
+    placed_by_eid = defaultdict(list)
+    for b in placed:
+        placed_by_eid[b["entity_id"]].append(b)
+
+    violations = []
+    for anchor_eid, partner_eids in BUILDING_SETS.items():
+        anchors = placed_by_eid.get(anchor_eid, [])
+        if not anchors:
+            continue
+        all_partner_fp = set()
+        for peid in partner_eids:
+            for p in placed_by_eid.get(peid, []):
+                all_partner_fp |= footprint(p)
+        if not all_partner_fp:
+            continue   # no partner buildings exist in this city — skip
+        for anchor in anchors:
+            adj = adjacent_cells(anchor)
+            if not (adj & all_partner_fp):
+                violations.append(
+                    f"    {anchor['name']} @ ({anchor['x']},{anchor['y']}) — no set buddy adjacent"
+                )
+    return violations
 
 
 # -----------------------------------------
@@ -627,7 +672,13 @@ def optimize(city, anneal_iters=50000, seed=42):
     print(f"  Placed     : {len(placed)} / {len(buildings)}")
     print(f"  Road tiles : {len(roads)}  (greedy: {greedy_count}, original: {original_roads})")
     print(f"  Reduction  : {reduction} tiles freed")
-    print(f"  Cluster    : {clustering_score(placed)} (lower = better)")
+    buddy_violations = check_buddy_adjacency(placed)
+    if buddy_violations:
+        print(f"  Set buddies: FAILED ({len(buddy_violations)} adjacency violation(s))")
+        for v in buddy_violations:
+            print(v)
+    else:
+        print("  Set buddies: all adjacent (OK)")
 
     print("Validating...")
     opt_city = {"unlocked": unlocked, "buildings": placed}
