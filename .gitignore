@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Large data files
+buildings_with_values.json
+enriched_buildings_full.json
+enriched_buildings.json
+FullCTHG_Export.json
+Full*_Export*.json
+
+# City export files (personal city data — user-supplied)
+Exports/
+
+# Generated HTML layouts
+city_layout*.html
+
+# Personal notes
+Summaries/
+re-design questions.txt
+Summary_GPTBoostTable.txt
+ProductionSteps.txt
+
+# Old prototype / utility scripts (not part of the optimizer)
+foe_cost_based_optimizer.py
+city_optimization_engine.py
+foe_city_simulator.py
+foe_adaptive_road_engine.py
+*foe_adaptive_road_engine*.py
+build_*.py
+run_foe_pipeline.py
+generate_city_layout.py
+grid_mutations.py
+road_branch_builder.py
+debug_script.py
+whoknows.py
+Boosts_Present.py
+bldg_lookup.py
+classify_all_abilities.py
+extract_combat_abilities.py
+steam_bldg_info.py
+
+# Misc
+*.csv
+foe_city_optimizer.csv
+FoE_BldgDB.code-workspace

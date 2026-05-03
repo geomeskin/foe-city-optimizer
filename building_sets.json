@@ -1,0 +1,75 @@
+{
+  "_comment": "Auto-generated from CityEntities chainId abilities. road-requiring anchor -> [non-road partner entity_ids]. All level variants included.",
+  "_chains": ["guild_battlegrounds_road_to_victory", "guild_battlegrounds_iridescent_garden", "serpent_statue", "chain_mughals"],
+
+  "R_MultiAge_Battlegrounds1a": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1b": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1c": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1d": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1e": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1f": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1g": ["D_MultiAge_Battlegrounds2"],
+  "R_MultiAge_Battlegrounds1h": ["D_MultiAge_Battlegrounds2"],
+
+  "R_MultiAge_Battlegrounds3a": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3b": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3c": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3d": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3e": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3f": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3g": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3hBazaar":  ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3hCitadel": ["D_MultiAge_Battlegrounds4"],
+  "R_MultiAge_Battlegrounds3hRoyalty": ["D_MultiAge_Battlegrounds4"],
+
+  "R_MultiAge_Expedition22a": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+  "R_MultiAge_Expedition22b": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+  "R_MultiAge_Expedition22c": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+  "R_MultiAge_Expedition22dSilver": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+  "R_MultiAge_Expedition22eGold": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+  "R_MultiAge_Expedition22fPlatinum": [
+    "D_MultiAge_Expedition22Feathers", "D_MultiAge_Expedition22FeathersGold",
+    "D_MultiAge_Expedition22FeathersPlatinum", "D_MultiAge_Expedition22FeathersSilver",
+    "D_MultiAge_Expedition22Scales", "D_MultiAge_Expedition22ScalesGold",
+    "D_MultiAge_Expedition22ScalesPlatinum", "D_MultiAge_Expedition22ScalesSilver",
+    "D_MultiAge_Expedition22Spikes", "D_MultiAge_Expedition22SpikesGold",
+    "D_MultiAge_Expedition22SpikesPlatinum", "D_MultiAge_Expedition22SpikesSilver"
+  ],
+
+  "H_Mughals_Townhall": ["J_Mughals_Diplomacy1", "J_Mughals_Diplomacy2"]
+}
