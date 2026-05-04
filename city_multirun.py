@@ -14,6 +14,7 @@ Example:
 import sys
 import os
 import re
+import json
 import multiprocessing
 from contextlib import redirect_stdout
 from io import StringIO
@@ -21,6 +22,21 @@ from io import StringIO
 from city_loader import load_city
 from city_optimizer import optimize, check_buddy_adjacency
 from city_visualizer import render
+
+
+def save_result(result_file, city_file, stem, seed, placed, roads_set, original_roads):
+    data = {
+        "city_file":     city_file or "",
+        "stem":          stem,
+        "seed":          seed,
+        "road_count":    len(roads_set),
+        "original_roads": original_roads,
+        "placed":        placed,
+        "roads":         [list(r) for r in sorted(roads_set)],
+    }
+    with open(result_file, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    print(f"Saved result : {result_file}")
 
 
 SEEDS = [42, 7, 13, 99, 123, 500, 1337, 2024, 9999, 31415, 27182, 11111]
@@ -89,6 +105,10 @@ if __name__ == "__main__":
             print(v)
     else:
         print("  Set buddies: all adjacent (OK)")
+
+    result_file = f"city_result_{stem}.json" if export_file else "city_result.json"
+    save_result(result_file, export_file, stem if export_file else "",
+                best_seed, best_placed, best_roads_set, city.get("original_roads"))
 
     render(city["unlocked"], best_placed, best_roads_set, out,
            original_roads=city.get("original_roads"), city_tag=stem if export_file else "")
