@@ -12,17 +12,8 @@ _DIR = os.path.dirname(os.path.abspath(__file__))
 
 PREMIER_IDS = frozenset({'W_MultiAge_LTE24A5'})   # Eternal Market - Neon Horizon
 PREMIER_TILE_THRESHOLD = 20
-_BOOST_FILE = os.path.join(_DIR, "ranked_buildings.json")
 
-def _load_boost_scores():
-    try:
-        with open(_BOOST_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return {e["id"]: e["scores"]["balanced"] for e in data if "scores" in e}
-    except Exception:
-        return {}
-
-BOOST_SCORES = _load_boost_scores()
+BOOST_SCORES = {}   # populated per-city at the start of optimize()
 
 _SETS_FILE = os.path.join(_DIR, "building_sets.json")
 
@@ -520,6 +511,9 @@ def anneal(city, placed_init, roads_init, premier_positioned=None, iterations=50
 # -----------------------------------------
 
 def optimize(city, anneal_iters=50000, seed=42):
+    global BOOST_SCORES
+    BOOST_SCORES = city.get("boost_scores", {})
+
     unlocked  = city["unlocked"]
     buildings = city["buildings"]
 

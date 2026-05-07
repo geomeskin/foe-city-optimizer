@@ -1,6 +1,65 @@
 import json
+from collections import defaultdict
 
 EXPORT_FILE = "FullCTHG_Export.json"
+
+ERA_ORDER = [
+    "StoneAge","BronzeAge","IronAge","EarlyMiddleAge","HighMiddleAge",
+    "LateMiddleAge","ColonialAge","IndustrialAge","ProgressiveEra",
+    "ModernEra","PostModernEra","ContemporaryEra","TomorrowEra",
+    "FutureEra","ArcticFuture","OceanicFuture","VirtualFuture",
+    "SpaceAgeMars","SpaceAgeAsteroidBelt","SpaceAgeVenus",
+    "SpaceAgeJupiterMoon","SpaceAgeTitan","SpaceAgeSpaceHub",
+]
+
+COMBAT_TYPES = frozenset({
+    "att_boost_attacker", "def_boost_attacker", "att_def_boost_attacker",
+    "att_boost_defender", "def_boost_defender", "att_def_boost_defender",
+})
+
+def _era_value(era_map, era):
+    for key in ("AllAge", era):
+        if key in era_map:
+            d = era_map[key]
+            return d.get("type"), d.get("value", 0)
+    for e in reversed(ERA_ORDER):
+        if e in era_map:
+            d = era_map[e]
+            return d.get("type"), d.get("value", 0)
+    return None, 0
+
+def _era_component(entity, era):
+    """Return the best-match components sub-dict for a given era."""
+    comp = entity.get("components", {})
+    return comp.get(era) or comp.get("AllAge") or {}
+
+def compute_boost_scores(entities, era="SpaceAgeSpaceHub"):
+    """Return {entity_id: total_combat_boost_pct} for each entity at the given era.
+    Reads from abilities.boostHints (T_ buildings) and components[era].boosts (W_ buildings).
+    """
+    scores = {}
+    for eid, entity in entities.items():
+        total = 0.0
+        # abilities.boostHints — used by T_ expedition/combat buildings
+        for ability in entity.get("abilities", []):
+            for bh in (ability.get("boostHints") or []):
+                btype, val = _era_value(bh.get("boostHintEraMap", {}), era)
+                if btype in COMBAT_TYPES and val:
+                    total += val
+            for bn in (ability.get("bonuses") or []):
+                boost = bn.get("boost", {})
+                if isinstance(boost, dict):
+                    btype, val = _era_value(boost, era)
+                    if btype in COMBAT_TYPES and val:
+                        total += val
+        # components[era].boosts — used by W_ event buildings (skip guild_raids-only boosts)
+        era_comp = _era_component(entity, era)
+        for b in (era_comp.get("boosts") or {}).get("boosts", []):
+            if b.get("type") in COMBAT_TYPES and b.get("targetedFeature") != "guild_raids":
+                total += b.get("value", 0)
+        if total > 0:
+            scores[eid] = total
+    return scores
 
 
 def get_size(entity):
@@ -92,11 +151,15 @@ def load_city(export_file=EXPORT_FILE):
                 for dx in range(w):
                     road_cells.add((item["x"] + dx, item["y"] + dy))
 
+    boost_scores = compute_boost_scores(entities)
+
     return {
         "unlocked":       unlocked,
         "buildings":      buildings,
         "skipped":        skipped,
         "original_roads": len(road_cells),
+        "boost_scores":   boost_scores,
+        "entities":       entities,
     }
 
 
